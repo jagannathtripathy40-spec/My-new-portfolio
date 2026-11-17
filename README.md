@@ -1,65 +1,92 @@
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>CricketLive - Match Management</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+const express = require("express");
+const fs = require("fs");
+const path = require("path");
 
-<header>
-  <h1>🏏 CricketLive</h1>
-  <p>Cricket Match Management System</p>
-</header>
+const app = express();
+const PORT = 3000;
+const DB = path.join(__dirname, "matches.json");
 
-<nav>
-  <a href="#dashboard">Dashboard</a>
-  <a href="#matches">Matches</a>
-  <a href="#add">Add Match</a>
-</nav>
+app.use(express.json());
+app.use(express.static(path.join(__dirname, "public")));
 
-<main>
-  <section id="dashboard">
-    <h2>Match Dashboard</h2>
-    <div class="stats">
-      <div class="stat">
-        <h3 id="total">0</h3>
-        <p>Total Matches</p>
-      </div>
-      <div class="stat">
-        <h3 id="live">0</h3>
-        <p>Live Matches</p>
-      </div>
-      <div class="stat">
-        <h3 id="upcoming">0</h3>
-        <p>Upcoming</p>
-      </div>
-    </div>
-  </section>
+function readMatches() {
+  if (!fs.existsSync(DB)) {
+    fs.writeFileSync(DB, "[]");
+  }
+  return JSON.parse(fs.readFileSync(DB, "utf8"));
+}
 
-  <section id="matches">
-    <h2>🏆 All Cricket Matches</h2>
-    <div id="matchList" class="match-list"></div>
-  </section>
+function saveMatches(matches) {
+  fs.writeFileSync(DB, JSON.stringify(matches, null, 2));
+}
 
-  <section id="add">
-    <h2>➕ Add New Match</h2>
-    <form id="matchForm">
-      <input id="team1" placeholder="Team 1 Name" required>
-      <input id="team2" placeholder="Team 2 Name" required>
-      <input id="venue" placeholder="Match Venue" required>
-      <button type="submit">Add Match</button>
-    </form>
-    <p id="message"></p>
-  </section>
-</main>
+// Get all matches
+app.get("/api/matches", (req, res) => {
+  res.json(readMatches());
+});
 
-<footer>
-  <p>© 2026 CricketLive | Developed by Jagannath</p>
-</footer>
+// Add new match
+app.post("/api/matches", (req, res) => {
+  const { team1, team2, venue } = req.body;
 
-<script src="app.js"></script>
-</body>
-</html>
+  if (!team1 || !team2 || !venue || team1 === team2) {
+    return res.status(400).json({ error: "Enter valid match details" });
+  }
+
+  const matches = readMatches();
+
+  const match = {
+    id: Date.now().toString(),
+    team1,
+    team2,
+    venue,
+    status: "Upcoming",
+    runs: 0,
+    wickets: 0,
+    overs: 0
+  };
+
+  matches.push(match);
+  saveMatches(matches);
+
+  res.status(201).json(match);
+});
+
+// Update score
+app.patch("/api/matches/:id/score", (req, res) => {
+  const matches = readMatches();
+  const match = matches.find(m => m.id === req.params.id);
+
+  if (!match) {
+    return res.status(404).json({ error: "Match not found" });
+  }
+
+  const { runs, wickets, overs, status } = req.body;
+
+  if (runs !== undefined) match.runs = Math.max(0, Number(runs));
+  if (wickets !== undefined) match.wickets = Math.min(10, Math.max(0, Number(wickets)));
+  if (overs !== undefined) match.overs = Math.max(0, Number(overs));
+  if (status !== undefined) match.status = status;
+
+  saveMatches(matches);
+  res.json(match);
+});
+
+// Delete match
+app.delete("/api/matches/:id", (req, res) => {
+  const matches = readMatches();
+  const updated = matches.filter(m => m.id !== req.params.id);
+
+  if (matches.length === updated.length) {
+    return res.status(404).json({ error: "Match not found" });
+  }
+
+  saveMatches(updated);
+  res.json({ message: "Match deleted successfully" });
+});
+
+app.listen(PORT, () => {
+  console.log(`CricketLive running at http://localhost:${PORT}`);
+});
+
