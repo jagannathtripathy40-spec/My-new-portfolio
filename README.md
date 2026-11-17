@@ -1,92 +1,108 @@
 
-const express = require("express");
-const fs = require("fs");
-const path = require("path");
-
-const app = express();
-const PORT = 3000;
-const DB = path.join(__dirname, "matches.json");
-
-app.use(express.json());
-app.use(express.static(path.join(__dirname, "public")));
-
-function readMatches() {
-  if (!fs.existsSync(DB)) {
-    fs.writeFileSync(DB, "[]");
-  }
-  return JSON.parse(fs.readFileSync(DB, "utf8"));
+<!DOCTYPE html>
+<html>
+<head>
+<title>Modern House Design</title>
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-function saveMatches(matches) {
-  fs.writeFileSync(DB, JSON.stringify(matches, null, 2));
+body {
+  background: linear-gradient(skyblue, white);
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: Arial;
 }
 
-// Get all matches
-app.get("/api/matches", (req, res) => {
-  res.json(readMatches());
-});
+.house {
+  position: relative;
+  width: 350px;
+  height: 260px;
+  background: #f5deb3;
+  border: 5px solid #9b7653;
+  margin-top: 80px;
+}
 
-// Add new match
-app.post("/api/matches", (req, res) => {
-  const { team1, team2, venue } = req.body;
+.roof {
+  position: absolute;
+  top: -105px;
+  left: -35px;
+  width: 410px;
+  height: 110px;
+  background: #8b0000;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+}
 
-  if (!team1 || !team2 || !venue || team1 === team2) {
-    return res.status(400).json({ error: "Enter valid match details" });
-  }
+.window {
+  position: absolute;
+  top: 35px;
+  width: 75px;
+  height: 80px;
+  background: #87ceeb;
+  border: 7px solid white;
+}
 
-  const matches = readMatches();
+.window1 { left: 35px; }
+.window2 { right: 35px; }
 
-  const match = {
-    id: Date.now().toString(),
-    team1,
-    team2,
-    venue,
-    status: "Upcoming",
-    runs: 0,
-    wickets: 0,
-    overs: 0
-  };
+.door {
+  position: absolute;
+  bottom: 0;
+  left: 130px;
+  width: 85px;
+  height: 145px;
+  background: #704214;
+  border: 5px solid white;
+}
 
-  matches.push(match);
-  saveMatches(matches);
+.door::after {
+  content: "";
+  position: absolute;
+  right: 10px;
+  top: 70px;
+  width: 9px;
+  height: 9px;
+  background: gold;
+  border-radius: 50%;
+}
 
-  res.status(201).json(match);
-});
+.ground {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100px;
+  background: green;
+  z-index: -1;
+}
 
-// Update score
-app.patch("/api/matches/:id/score", (req, res) => {
-  const matches = readMatches();
-  const match = matches.find(m => m.id === req.params.id);
+h1 {
+  position: absolute;
+  top: 30px;
+  color: #333;
+  text-align: center;
+}
+</style>
+</head>
 
-  if (!match) {
-    return res.status(404).json({ error: "Match not found" });
-  }
+<body>
 
-  const { runs, wickets, overs, status } = req.body;
+<h1>🏡 My Dream House</h1>
 
-  if (runs !== undefined) match.runs = Math.max(0, Number(runs));
-  if (wickets !== undefined) match.wickets = Math.min(10, Math.max(0, Number(wickets)));
-  if (overs !== undefined) match.overs = Math.max(0, Number(overs));
-  if (status !== undefined) match.status = status;
+<div class="house">
+  <div class="roof"></div>
+  <div class="window window1"></div>
+  <div class="window window2"></div>
+  <div class="door"></div>
+</div>
 
-  saveMatches(matches);
-  res.json(match);
-});
+<div class="ground"></div>
 
-// Delete match
-app.delete("/api/matches/:id", (req, res) => {
-  const matches = readMatches();
-  const updated = matches.filter(m => m.id !== req.params.id);
-
-  if (matches.length === updated.length) {
-    return res.status(404).json({ error: "Match not found" });
-  }
-
-  saveMatches(updated);
-  res.json({ message: "Match deleted successfully" });
-});
-
-app.listen(PORT, () => {
-  console.log(`CricketLive running at http://localhost:${PORT}`);
-});
+</body>
+</html>
 
