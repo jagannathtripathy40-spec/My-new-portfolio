@@ -1,35 +1,65 @@
-import random
 
-def play_cricket():
-    print("=== CRICKET GAME MEIN AAPKA SWAGAT HAI ===")
-    user_score = 0
-    wickets = 0
-    max_balls = 6  # 1 over ka match
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CricketLive - Match Management</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
 
-    print(f"\nAapki batting shuru hoti hai! (Total balls: {max_balls})")
-    
-    for ball in range(1, max_balls + 1):
-        try:
-            user_run = int(input(f"Ball {ball}: 1 se 6 ke beech mein koi number chuniye: "))
-            if user_run < 1 or user_run > 6:
-                print("Kripya 1 se 6 ke beech ka hi number dalein.")
-                continue
-        except ValueError:
-            print("Kripya sahi number dalein!")
-            continue
+<header>
+  <h1>🏏 CricketLive</h1>
+  <p>Cricket Match Management System</p>
+</header>
 
-        comp_run = random.randint(1, 6)
-        print(f"Computer ne dala: {comp_run}")
+<nav>
+  <a href="#dashboard">Dashboard</a>
+  <a href="#matches">Matches</a>
+  <a href="#add">Add Match</a>
+</nav>
 
-        if user_run == comp_run:
-            print("OUT! Aap out ho gaye hain!")
-            break
-        else:
-            user_score += user_run
-            print(f"Aapko mile {user_run} runs. Total Score: {user_score}\n")
+<main>
+  <section id="dashboard">
+    <h2>Match Dashboard</h2>
+    <div class="stats">
+      <div class="stat">
+        <h3 id="total">0</h3>
+        <p>Total Matches</p>
+      </div>
+      <div class="stat">
+        <h3 id="live">0</h3>
+        <p>Live Matches</p>
+      </div>
+      <div class="stat">
+        <h3 id="upcoming">0</h3>
+        <p>Upcoming</p>
+      </div>
+    </div>
+  </section>
 
-    print("\n--- INNINGS SAMAPT ---")
-    print(f"Aapka Final Score: {user_score} runs")
+  <section id="matches">
+    <h2>🏆 All Cricket Matches</h2>
+    <div id="matchList" class="match-list"></div>
+  </section>
 
-if __name__ == "__main__":
-    play_cricket()
+  <section id="add">
+    <h2>➕ Add New Match</h2>
+    <form id="matchForm">
+      <input id="team1" placeholder="Team 1 Name" required>
+      <input id="team2" placeholder="Team 2 Name" required>
+      <input id="venue" placeholder="Match Venue" required>
+      <button type="submit">Add Match</button>
+    </form>
+    <p id="message"></p>
+  </section>
+</main>
+
+<footer>
+  <p>© 2026 CricketLive | Developed by Jagannath</p>
+</footer>
+
+<script src="app.js"></script>
+</body>
+</html>
